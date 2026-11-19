@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Estação de Coleta Geográfica & Telemetria</title>
 
-  <!-- Fontes técnicas: Inter (UI) + JetBrains Mono (Coordenadas e métricas) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,7 +12,6 @@
     rel="stylesheet"
   />
 
-  <!-- Leaflet CSS (Mapa interativo gratuito, sem API Key) -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -67,7 +65,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Barra superior */
     .topbar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -142,7 +139,6 @@
       background: #16a34a;
     }
 
-    /* Grade principal */
     .workspace {
       max-width: 1360px;
       margin: 0 auto;
@@ -198,7 +194,6 @@
       padding: 1.25rem;
     }
 
-    /* Formulário */
     .field {
       margin-bottom: 1rem;
       position: relative;
@@ -269,7 +264,6 @@
       gap: 0.75rem;
     }
 
-    /* Dropdown da busca de cidade */
     .search-results {
       display: none;
       position: absolute;
@@ -322,7 +316,6 @@
       color: var(--text-muted);
     }
 
-    /* Botões */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -394,7 +387,6 @@
       min-height: 1.1rem;
     }
 
-    /* Banner de status */
     .status-banner {
       display: none;
       margin-top: 0.9rem;
@@ -419,7 +411,6 @@
       color: var(--error-text);
     }
 
-    /* Painel de Telemetria */
     .telemetry-hero {
       display: flex;
       align-items: flex-end;
@@ -484,14 +475,6 @@
       padding: 0.7rem 0.8rem;
     }
 
-    .metric-tile-wide {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
     .metric-label {
       font-size: 0.7rem;
       font-weight: 600;
@@ -509,61 +492,10 @@
       font-variant-numeric: tabular-nums;
     }
 
-    .metric-val-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
     .metric-sub {
       font-size: 0.72rem;
       color: var(--text-muted);
       margin-top: 0.1rem;
-    }
-
-    .uv-right {
-      text-align: right;
-    }
-
-    .uv-badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.14rem 0.5rem;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-secondary);
-    }
-
-    .uv-badge.uv-low {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-      color: #166534;
-    }
-
-    .uv-badge.uv-mod {
-      background: #fefce8;
-      border-color: #fde047;
-      color: #854d0e;
-    }
-
-    .uv-badge.uv-high {
-      background: #fff7ed;
-      border-color: #fdba74;
-      color: #9a3412;
-    }
-
-    .uv-badge.uv-vhigh {
-      background: #fef2f2;
-      border-color: #fca5a5;
-      color: #991b1b;
-    }
-
-    .uv-badge.uv-ext {
-      background: #faf5ff;
-      border-color: #d8b4fe;
-      color: #6b21a8;
     }
 
     .telemetry-badge {
@@ -576,7 +508,6 @@
       border: 1px solid var(--brand-border);
     }
 
-    /* Mapa Interativo */
     .map-panel {
       overflow: hidden;
       display: flex;
@@ -630,7 +561,7 @@
 
     #map {
       width: 100%;
-      height: 540px;
+      height: 500px;
       background: #eae8e3;
       z-index: 1;
     }
@@ -648,7 +579,6 @@
       flex-wrap: wrap;
     }
 
-    /* Marcador customizado carmim */
     .crimson-pin {
       position: relative;
       width: 24px;
@@ -818,7 +748,6 @@
   </header>
 
   <main class="workspace">
-    <!-- Coluna Esquerda: Formulário + Telemetria -->
     <div class="column-stack">
       <section class="panel">
         <div class="panel-header">
@@ -926,7 +855,6 @@
         </div>
       </section>
 
-      <!-- Painel de Telemetria Meteorológica -->
       <section class="panel" aria-live="polite">
         <div class="panel-header">
           <div class="panel-title-group">
@@ -991,26 +919,11 @@
               <div id="valClouds" class="metric-val">-- %</div>
               <div class="metric-sub">Cobertura total</div>
             </div>
-
-            <div class="metric-tile metric-tile-wide">
-              <div>
-                <div class="metric-label">Índice UV (Radiação Solar)</div>
-                <div class="metric-val-row">
-                  <span id="valUv" class="metric-val">--</span>
-                  <span id="valUvBadge" class="uv-badge">Aguardando</span>
-                </div>
-              </div>
-              <div class="uv-right">
-                <div class="metric-label">Máxima Hoje</div>
-                <div id="valUvMax" class="metric-val">--</div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
     </div>
 
-    <!-- Coluna Direita: Mapa Interativo + Histórico da Sessão -->
     <div class="column-stack">
       <section class="panel map-panel" aria-label="Mapa interativo">
         <div class="panel-header">
@@ -1042,7 +955,6 @@
         </div>
       </section>
 
-      <!-- Histórico dos registros enviados na sessão -->
       <section class="panel">
         <div class="panel-header">
           <div class="panel-title-group">
@@ -1073,7 +985,6 @@
       </section>
     </div>
   </main>
-
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -1113,9 +1024,6 @@
       const valPrecip = document.getElementById("valPrecip");
       const valPressure = document.getElementById("valPressure");
       const valClouds = document.getElementById("valClouds");
-      const valUv = document.getElementById("valUv");
-      const valUvBadge = document.getElementById("valUvBadge");
-      const valUvMax = document.getElementById("valUvMax");
 
       const mapCoordsReadout = document.getElementById("mapCoordsReadout");
       const layerButtons = document.querySelectorAll(".layer-btn");
@@ -1230,17 +1138,6 @@
         return `${dirs[Math.round(deg / 45) % 8]} (${Math.round(deg)}°)`;
       };
 
-      const classifyUv = (uv) => {
-        if (uv === null || uv === undefined || Number.isNaN(uv)) {
-          return { label: "Indisponível", cls: "" };
-        }
-        if (uv < 3) return { label: "Baixo", cls: "uv-low" };
-        if (uv < 6) return { label: "Moderado", cls: "uv-mod" };
-        if (uv < 8) return { label: "Alto", cls: "uv-high" };
-        if (uv < 11) return { label: "Muito alto", cls: "uv-vhigh" };
-        return { label: "Extremo", cls: "uv-ext" };
-      };
-
       const updateMapPosition = (lat, lng, options = {}) => {
         const { zoom = 12, accuracy = null, popupHtml = null, fly = true } = options;
 
@@ -1304,9 +1201,6 @@
             "wind_direction_10m",
             "wind_gusts_10m"
           ].join(","),
-          hourly: "uv_index",
-          daily: "uv_index_max",
-          forecast_days: "1",
           timezone: "auto"
         });
 
@@ -1320,22 +1214,6 @@
       const renderWeatherPanel = (data, label) => {
         const c = data.current || {};
         const u = data.current_units || {};
-
-        // Localiza o índice UV da hora atual no array hourly
-        const currentHourKey = c.time ? `${c.time.slice(0, 13)}:00` : null;
-        const hourlyTimes = data.hourly?.time || [];
-        const hourlyUv = data.hourly?.uv_index || [];
-        const uvIdx = currentHourKey ? hourlyTimes.indexOf(currentHourKey) : -1;
-        const uvNowRaw = uvIdx !== -1 && hourlyUv[uvIdx] !== null && hourlyUv[uvIdx] !== undefined
-          ? Number(hourlyUv[uvIdx])
-          : null;
-        const uvMaxRaw = data.daily?.uv_index_max?.[0] !== undefined && data.daily?.uv_index_max?.[0] !== null
-          ? Number(data.daily.uv_index_max[0])
-          : null;
-
-        const uvInfo = classifyUv(uvNowRaw);
-        const uvText = uvNowRaw !== null ? uvNowRaw.toFixed(1) : "--";
-        const uvMaxText = uvMaxRaw !== null ? uvMaxRaw.toFixed(1) : "--";
 
         const temp = c.temperature_2m !== undefined ? c.temperature_2m.toFixed(1) : "--";
         const feels = c.apparent_temperature !== undefined ? `${c.apparent_temperature.toFixed(1)} ${u.apparent_temperature || "°C"}` : "-- °C";
@@ -1360,10 +1238,6 @@
         valPrecip.textContent = precip;
         valPressure.textContent = pressure;
         valClouds.textContent = clouds;
-        valUv.textContent = uvText;
-        valUvBadge.textContent = uvInfo.label;
-        valUvBadge.className = `uv-badge ${uvInfo.cls}`.trim();
-        valUvMax.textContent = uvMaxText;
 
         return {
           temp,
@@ -1374,9 +1248,6 @@
           precip,
           pressure,
           clouds,
-          uv: uvText,
-          uvLevel: uvInfo.label,
-          uvMax: uvMaxText,
           condition,
           timeStr
         };
@@ -1393,8 +1264,7 @@
             const popupHtml = `
               <strong>${escapeHtml(label)}</strong><br/>
               ${escapeHtml(summary.condition)}<br/>
-              <strong>${summary.temp}°C</strong> · Umidade ${summary.humidity}<br/>
-              Vento ${summary.wind} · UV ${summary.uv} (${escapeHtml(summary.uvLevel)})
+              <strong>${summary.temp}°C</strong> · Umidade ${summary.humidity} · Vento ${summary.wind}
             `;
             marker.bindPopup(popupHtml).openPopup();
           }
@@ -1581,7 +1451,6 @@
         }
       });
 
-      // Renderização da tabela de histórico da sessão
       const renderHistory = () => {
         historyCount.textContent = String(sessionRecords.length);
         btnExportCsv.disabled = sessionRecords.length === 0;
@@ -1596,7 +1465,6 @@
               <td class="mono-cell">${rec.lat}, ${rec.lng}</td>
               <td class="mono-cell">${rec.temp}°C</td>
               <td class="mono-cell">${rec.humidity}</td>
-              <td class="mono-cell">${rec.uv}</td>
               <td class="mono-cell">${rec.wind}</td>
               <td>${escapeHtml(rec.condition)}</td>
             </tr>
@@ -1613,7 +1481,6 @@
                   <th>Coordenadas</th>
                   <th>Temp.</th>
                   <th>Umidade</th>
-                  <th>UV</th>
                   <th>Vento</th>
                   <th>Condição</th>
                 </tr>
@@ -1629,7 +1496,7 @@
             if (!rec) return;
             updateMapPosition(Number(rec.lat), Number(rec.lng), {
               zoom: 13,
-              popupHtml: `<strong>${escapeHtml(rec.local)}</strong><br/>${escapeHtml(rec.condition)}<br/><strong>${rec.temp}°C</strong> · Umidade ${rec.humidity} · UV ${rec.uv}`
+              popupHtml: `<strong>${escapeHtml(rec.local)}</strong><br/>${escapeHtml(rec.condition)}<br/><strong>${rec.temp}°C</strong> · Umidade ${rec.humidity}`
             });
           });
         });
@@ -1637,22 +1504,11 @@
 
       btnExportCsv.addEventListener("click", () => {
         if (sessionRecords.length === 0) return;
-        const headers = [
-          "Local",
-          "Latitude",
-          "Longitude",
-          "Temperatura_C",
-          "Umidade",
-          "Indice_UV",
-          "UV_Max_Dia",
-          "Vento",
-          "Condicao",
-          "Horario_Registro"
-        ];
+        const headers = ["Local", "Latitude", "Longitude", "Temperatura_C", "Umidade", "Vento", "Condicao", "Horario_Registro"];
         const csvLines = [
           headers.join(","),
           ...sessionRecords.map((r) =>
-            [r.local, r.lat, r.lng, r.temp, r.humidity, r.uv, r.uvMax, r.wind, r.condition, r.timestamp]
+            [r.local, r.lat, r.lng, r.temp, r.humidity, r.wind, r.condition, r.timestamp]
               .map((v) => `"${String(v).replace(/"/g, '""')}"`)
               .join(",")
           )
@@ -1703,7 +1559,7 @@
         submitBtnText.textContent = "Registrando...";
 
         try {
-          // 1. Envia ao Google Forms
+
           await fetch(GOOGLE_FORM_ACTION_URL, {
             method: "POST",
             mode: "no-cors",
@@ -1711,21 +1567,17 @@
             body: formData.toString()
           });
 
-          // 2. Atualiza telemetria e mapa
           const latNum = Number(latValue);
           const lngNum = Number(lngValue);
           updateMapPosition(latNum, lngNum, { zoom: 13 });
           const summary = await fetchAndRenderWeather(latNum, lngNum, localValue);
 
-          // 3. Adiciona ao histórico da sessão
           sessionRecords.unshift({
             local: localValue,
             lat: latNum.toFixed(5),
             lng: lngNum.toFixed(5),
             temp: summary.temp,
             humidity: summary.humidity,
-            uv: summary.uv,
-            uvMax: summary.uvMax,
             wind: summary.wind,
             condition: summary.condition,
             timestamp: new Date().toLocaleString("pt-BR")
