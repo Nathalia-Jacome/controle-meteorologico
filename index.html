@@ -13,7 +13,7 @@
     rel="stylesheet"
   />
 
-  <!-- Leaflet CSS (Mapa interativo gratuito, sem API Key) -->
+  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -630,8 +630,9 @@
 
     #map {
       width: 100%;
-      height: 540px;
-      background: #eae8e3;
+      height: 520px;
+      min-height: 520px;
+      background: #e4e1db;
       z-index: 1;
     }
 
@@ -766,6 +767,7 @@
 
       #map {
         height: 400px;
+        min-height: 400px;
       }
     }
 
@@ -787,6 +789,7 @@
 
       #map {
         height: 320px;
+        min-height: 320px;
       }
     }
   </style>
@@ -1150,6 +1153,11 @@
 
       let activeTileLayer = tileLayers.map.addTo(map);
 
+      // Garante que o mapa renderiza corretamente após carregar a página
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 200);
+
       layerButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
           const target = btn.dataset.layer;
@@ -1272,7 +1280,6 @@
           accuracyCircle = null;
         }
 
-        // Só exibe o círculo de precisão quando o sinal é preciso (até 300 m)
         if (accuracy && accuracy > 0 && accuracy <= 300) {
           accuracyCircle = L.circle([lat, lng], {
             radius: accuracy,
@@ -1294,7 +1301,7 @@
         mapCoordsReadout.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
       };
 
-      // Consulta completa na Open-Meteo (incluindo UV atual via hourly e UV máximo via daily)
+      // Consulta completa na Open-Meteo
       const fetchWeatherData = async (lat, lng) => {
         const params = new URLSearchParams({
           latitude: String(lat),
@@ -1328,7 +1335,6 @@
         const c = data.current || {};
         const u = data.current_units || {};
 
-        // Localiza o índice UV da hora atual no array hourly
         const currentHourKey = c.time ? `${c.time.slice(0, 13)}:00` : null;
         const hourlyTimes = data.hourly?.time || [];
         const hourlyUv = data.hourly?.uv_index || [];
@@ -1530,4 +1536,231 @@
           return;
         }
 
-        btnGps.disabled =
+        btnGps.disabled = true;
+        btnGps.classList.add("loading");
+        gpsBtnText.textContent = "Localizando...";
+        gpsMeta.textContent = "";
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            latInput.value = latitude.toFixed(5);
+            lngInput.value = longitude.toFixed(5);
+            gpsMeta.textContent = `GPS capturado · Precisão aproximada: ±${Math.round(accuracy)} m`;
+
+            updateMapPosition(latitude, longitude, { zoom: 14, accuracy });
+
+            btnGps.disabled = false;
+            btnGps.classList.remove("loading");
+            gpsBtnText.textContent = "Atualizar GPS";
+
+            try {
+              await fetchAndRenderWeather(latitude, longitude, localInput.value.trim() || "Minha localização");
+            } catch {
+              setBanner("error", "GPS capturado, mas não foi possível consultar o clima.");
+            }
+          },
+          (error) => {
+            const messages = {
+              1: "Permissão de localização negada no navegador.",
+              2: "Sinal de localização indisponível no momento.",
+              3: "Tempo limite esgotado ao buscar o GPS."
+            };
+            setBanner("error", messages[error.code] || "Erro ao obter localização.");
+            btnGps.disabled = false;
+            btnGps.classList.remove("loading");
+            gpsBtnText.textContent = "Usar GPS";
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+
+      // Botão "Consultar Clima" (sem enviar para o Google Forms)
+      btnPreviewWeather.addEventListener("click", async () => {
+        clearBanner();
+        const latStr = latInput.value.trim().replace(",", ".");
+        const lngStr = lngInput.value.trim().replace(",", ".");
+
+        if (!isValidCoordinate(latStr, -90, 90) || !isValidCoordinate(lngStr, -180, 180)) {
+          setBanner("error", "Informe latitude (-90 a 90) e longitude (-180 a 180) válidas ou clique no mapa.");
+          return;
+        }
+
+        const lat = Number(latStr);
+        const lng = Number(lngStr);
+        const label = localInput.value.trim() || "Ponto consultado";
+
+        updateMapPosition(lat, lng, { zoom: 12 });
+        try {
+          await fetchAndRenderWeather(lat, lng, label);
+        } catch {
+          setBanner("error", "Falha ao consultar a Open-Meteo. Tente novamente.");
+        }
+      });
+
+      // Renderização da tabela de histórico da sessão
+      const renderHistory = () => {
+        historyCount.textContent = String(sessionRecords.length);
+        btnExportCsv.disabled = sessionRecords.length === 0;
+
+        if (sessionRecords.length === 0) return;
+
+        const rowsHtml = sessionRecords
+          .map(
+            (rec, idx) => `
+            <tr data-index="${idx}" title="Clique para focar no mapa">
+              <td><strong>${escapeHtml(rec.local)}</strong></td>
+              <td class="mono-cell">${rec.lat}, ${rec.lng}</td>
+              <td class="mono-cell">${rec.temp}°C</td>
+              <td class="mono-cell">${rec.humidity}</td>
+              <td class="mono-cell">${rec.uv}</td>
+              <td class="mono-cell">${rec.wind}</td>
+              <td>${escapeHtml(rec.condition)}</td>
+            </tr>
+          `
+          )
+          .join("");
+
+        historyContainer.innerHTML = `
+          <div class="history-table-wrap">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Local</th>
+                  <th>Coordenadas</th>
+                  <th>Temp.</th>
+                  <th>Umidade</th>
+                  <th>UV</th>
+                  <th>Vento</th>
+                  <th>Condição</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        `;
+
+        historyContainer.querySelectorAll("tbody tr").forEach((tr) => {
+          tr.addEventListener("click", () => {
+            const rec = sessionRecords[Number(tr.dataset.index)];
+            if (!rec) return;
+            updateMapPosition(Number(rec.lat), Number(rec.lng), {
+              zoom: 13,
+              popupHtml: `<strong>${escapeHtml(rec.local)}</strong><br/>${escapeHtml(rec.condition)}<br/><strong>${rec.temp}°C</strong> · Umidade ${rec.humidity} · UV ${rec.uv}`
+            });
+          });
+        });
+      };
+
+      // Exportação em CSV dos registros da sessão
+      btnExportCsv.addEventListener("click", () => {
+        if (sessionRecords.length === 0) return;
+        const headers = [
+          "Local",
+          "Latitude",
+          "Longitude",
+          "Temperatura_C",
+          "Umidade",
+          "Indice_UV",
+          "UV_Max_Dia",
+          "Vento",
+          "Condicao",
+          "Horario_Registro"
+        ];
+        const csvLines = [
+          headers.join(","),
+          ...sessionRecords.map((r) =>
+            [r.local, r.lat, r.lng, r.temp, r.humidity, r.uv, r.uvMax, r.wind, r.condition, r.timestamp]
+              .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+              .join(",")
+          )
+        ];
+
+        const blob = new Blob(["\uFEFF" + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `registros_meteorologicos_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // Envio definitivo para o Google Forms + telemetria + histórico
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearBanner();
+
+        const localValue = localInput.value.trim();
+        const latValue = latInput.value.trim().replace(",", ".");
+        const lngValue = lngInput.value.trim().replace(",", ".");
+
+        if (!localValue) {
+          setBanner("error", "Preencha o campo Local / Identificação.");
+          localInput.focus();
+          return;
+        }
+
+        if (!isValidCoordinate(latValue, -90, 90)) {
+          setBanner("error", "Latitude inválida. Use um valor entre -90 e 90.");
+          latInput.focus();
+          return;
+        }
+
+        if (!isValidCoordinate(lngValue, -180, 180)) {
+          setBanner("error", "Longitude inválida. Use um valor entre -180 e 180.");
+          lngInput.focus();
+          return;
+        }
+
+        latInput.value = latValue;
+        lngInput.value = lngValue;
+
+        const formData = new URLSearchParams(new FormData(form));
+
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add("loading");
+        submitBtnText.textContent = "Registrando...";
+
+        try {
+          // 1. Envia ao Google Forms
+          await fetch(GOOGLE_FORM_ACTION_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData.toString()
+          });
+
+          // 2. Atualiza telemetria e mapa
+          const latNum = Number(latValue);
+          const lngNum = Number(lngValue);
+          updateMapPosition(latNum, lngNum, { zoom: 13 });
+          const summary = await fetchAndRenderWeather(latNum, lngNum, localValue);
+
+          // 3. Adiciona ao histórico da sessão
+          sessionRecords.unshift({
+            local: localValue,
+            lat: latNum.toFixed(5),
+            lng: lngNum.toFixed(5),
+            temp: summary.temp,
+            humidity: summary.humidity,
+            uv: summary.uv,
+            uvMax: summary.uvMax,
+            wind: summary.wind,
+            condition: summary.condition,
+            timestamp: new Date().toLocaleString("pt-BR")
+          });
+          renderHistory();
+
+          setBanner("success", `Registro "${localValue}" salvo na planilha com sucesso.`);
+        } catch {
+          setBanner("error", "Falha de conexão ao enviar ou consultar os dados. Tente novamente.");
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.classList.remove("loading");
+          submitBtnText.textContent = "Registrar na Planilha";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
