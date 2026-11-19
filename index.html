@@ -188,6 +188,53 @@
       color: var(--error-text);
     }
 
+    .weather-card {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    .weather-card.visible {
+      display: block;
+    }
+
+    .weather-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .weather-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .metric-box {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .metric-label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
     .gps-meta {
       font-size: 0.75rem;
       color: var(--text-muted);
@@ -279,6 +326,20 @@
       </button>
 
       <div id="statusBanner" class="status-banner" role="alert" aria-live="assertive"></div>
+
+      <section id="weatherCard" class="weather-card" aria-live="polite">
+        <div id="weatherTitle" class="weather-title"></div>
+        <div class="weather-metrics">
+          <div class="metric-box">
+            <span class="metric-label">Temperatura</span>
+            <span id="weatherTemp" class="metric-value">--</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Umidade</span>
+            <span id="weatherHumidity" class="metric-value">--</span>
+          </div>
+        </div>
+      </section>
     </form>
   </main>
 
@@ -286,6 +347,7 @@
     (() => {
       const GOOGLE_FORM_ACTION_URL =
         "https://docs.google.com/forms/d/e/1FAIpQLSfDpuoLfmkqqEnkgmkukDU0jff1Q9PX-s6kabDsbDR0nLEL6w/formResponse";
+      const OPEN_METEO_API_URL = "https://api.open-meteo.com/v1/forecast";
 
       const form = document.getElementById("locationForm");
       const localInput = document.getElementById("local");
@@ -297,6 +359,10 @@
       const btnSubmit = document.getElementById("btnSubmit");
       const submitBtnText = document.getElementById("submitBtnText");
       const statusBanner = document.getElementById("statusBanner");
+      const weatherCard = document.getElementById("weatherCard");
+      const weatherTitle = document.getElementById("weatherTitle");
+      const weatherTemp = document.getElementById("weatherTemp");
+      const weatherHumidity = document.getElementById("weatherHumidity");
 
       const setBanner = (type, message) => {
         statusBanner.className = `status-banner ${type}`;
@@ -308,13 +374,23 @@
         statusBanner.textContent = "";
       };
 
+      const hideWeatherCard = () => {
+        weatherCard.classList.remove("visible");
+      };
+
+      const showWeatherCard = (local, tempText, humidityText) => {
+        weatherTitle.textContent = `Clima atual — ${local}`;
+        weatherTemp.textContent = tempText;
+        weatherHumidity.textContent = humidityText;
+        weatherCard.classList.add("visible");
+      };
+
       const isValidCoordinate = (val, min, max) => {
         const normalized = val.trim().replace(",", ".");
         const num = Number(normalized);
         return normalized !== "" && !Number.isNaN(num) && num >= min && num <= max;
       };
 
-      // Captura de geolocalização do navegador
       btnGps.addEventListener("click", () => {
         clearBanner();
 
@@ -359,10 +435,10 @@
         );
       });
 
-      // Submissão assíncrona para o Google Forms
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         clearBanner();
+        hideWeatherCard();
 
         const localValue = localInput.value.trim();
         const latValue = latInput.value.trim().replace(",", ".");
@@ -386,7 +462,7 @@
           return;
         }
 
-        // Normaliza vírgula para ponto antes de montar o payload
+       
         latInput.value = latValue;
         lngInput.value = lngValue;
 
@@ -394,9 +470,10 @@
 
         btnSubmit.disabled = true;
         btnSubmit.classList.add("loading");
-        submitBtnText.textContent = "Enviando...";
+        submitBtnText.textContent = "Enviando e consultando clima...";
 
         try {
+         
           await fetch(GOOGLE_FORM_ACTION_URL, {
             method: "POST",
             mode: "no-cors",
@@ -406,11 +483,36 @@
             body: formData.toString()
           });
 
+        
+          const params = new URLSearchParams({
+            latitude: latValue,
+            longitude: lngValue,
+            current: "temperature_2m,relative_humidity_2m",
+            timezone: "auto"
+          });
+
+          const weatherResponse = await fetch(`${OPEN_METEO_API_URL}?${params.toString()}`);
+          if (!weatherResponse.ok) {
+            throw new Error("Erro ao consultar a Open-Meteo");
+          }
+
+          const weatherData = await weatherResponse.json();
+          const temp = weatherData.current?.temperature_2m;
+          const tempUnit = weatherData.current_units?.temperature_2m || "°C";
+          const humidity = weatherData.current?.relative_humidity_2m;
+          const humidityUnit = weatherData.current_units?.relative_humidity_2m || "%";
+
           setBanner("success", "Registro enviado com sucesso!");
+          showWeatherCard(
+            localValue,
+            temp !== undefined ? `${temp}${tempUnit}` : "--",
+            humidity !== undefined ? `${humidity}${humidityUnit}` : "--"
+          );
+
           form.reset();
           gpsMeta.textContent = "";
         } catch (err) {
-          setBanner("error", "Falha de conexão ao enviar os dados. Verifique sua internet.");
+          setBanner("error", "Falha ao enviar ou consultar o clima. Verifique sua conexão e tente novamente.");
         } finally {
           btnSubmit.disabled = false;
           btnSubmit.classList.remove("loading");
