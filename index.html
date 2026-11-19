@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Localização</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #f1f5f9;
+      --secondary-hover: #e2e8f0;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --error-bg: #fee2e2;
+      --error-text: #991b1b;
+      --focus-ring: rgba(37, 99, 235, 0.25);
+      --radius: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --secondary: #334155;
+        --secondary-hover: #475569;
+        --success-bg: rgba(22, 101, 52, 0.3);
+        --success-text: #86efac;
+        --error-bg: rgba(153, 27, 27, 0.3);
+        --error-text: #fca5a5;
+        --focus-ring: rgba(59, 130, 246, 0.35);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: var(--surface);
+      width: 100%;
+      max-width: 460px;
+      padding: 2rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header h1 {
+      font-size: 1.375rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .card-header p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 400px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.375rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.675rem 0.875rem;
+      font-size: 0.95rem;
+      color: var(--text);
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--focus-ring);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--secondary-hover);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+    }
+
+    .status-banner {
+      display: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-top: 1rem;
+    }
+
+    .status-banner.success {
+      display: block;
+      background-color: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .status-banner.error {
+      display: block;
+      background-color: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    .gps-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: -0.75rem;
+      margin-bottom: 1rem;
+      min-height: 1.1rem;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      display: none;
+    }
+
+    .loading .spinner {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="card">
+    <header class="card-header">
+      <h1>Cadastro de Coordenadas</h1>
+      <p>Informe o local e capture ou digite a latitude e longitude.</p>
+    </header>
+
+    <form id="locationForm" novalidate>
+      <div class="form-group">
+        <label for="local">Local / Identificação</label>
+        <input
+          type="text"
+          id="local"
+          name="entry.1022794968"
+          placeholder="Ex: Ponto de Coleta A"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <button type="button" id="btnGps" class="btn btn-secondary">
+        <span class="spinner" aria-hidden="true"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path>
+          <circle cx="12" cy="12" r="7"></circle>
+        </svg>
+        <span id="gpsBtnText">Capturar coordenadas via GPS</span>
+      </button>
+      <div id="gpsMeta" class="gps-meta" aria-live="polite"></div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="latitude">Latitude</label>
+          <input
+            type="text"
+            id="latitude"
+            name="entry.1278297924"
+            placeholder="-23.6639"
+            inputmode="decimal"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="longitude">Longitude</label>
+          <input
+            type="text"
+            id="longitude"
+            name="entry.738929017"
+            placeholder="-46.5383"
+            inputmode="decimal"
+            required
+          />
+        </div>
+      </div>
+
+      <button type="submit" id="btnSubmit" class="btn btn-primary">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="submitBtnText">Enviar Registro</span>
+      </button>
+
+      <div id="statusBanner" class="status-banner" role="alert" aria-live="assertive"></div>
+    </form>
+  </main>
+
+  <script>
+    (() => {
+      const GOOGLE_FORM_ACTION_URL =
+        "https://docs.google.com/forms/d/e/1FAIpQLSfDpuoLfmkqqEnkgmkukDU0jff1Q9PX-s6kabDsbDR0nLEL6w/formResponse";
+
+      const form = document.getElementById("locationForm");
+      const localInput = document.getElementById("local");
+      const latInput = document.getElementById("latitude");
+      const lngInput = document.getElementById("longitude");
+      const btnGps = document.getElementById("btnGps");
+      const gpsBtnText = document.getElementById("gpsBtnText");
+      const gpsMeta = document.getElementById("gpsMeta");
+      const btnSubmit = document.getElementById("btnSubmit");
+      const submitBtnText = document.getElementById("submitBtnText");
+      const statusBanner = document.getElementById("statusBanner");
+
+      const setBanner = (type, message) => {
+        statusBanner.className = `status-banner ${type}`;
+        statusBanner.textContent = message;
+      };
+
+      const clearBanner = () => {
+        statusBanner.className = "status-banner";
+        statusBanner.textContent = "";
+      };
+
+      const isValidCoordinate = (val, min, max) => {
+        const normalized = val.trim().replace(",", ".");
+        const num = Number(normalized);
+        return normalized !== "" && !Number.isNaN(num) && num >= min && num <= max;
+      };
+
+      // Captura de geolocalização do navegador
+      btnGps.addEventListener("click", () => {
+        clearBanner();
+
+        if (!("geolocation" in navigator)) {
+          setBanner("error", "Geolocalização não é suportada pelo seu navegador.");
+          return;
+        }
+
+        btnGps.disabled = true;
+        btnGps.classList.add("loading");
+        gpsBtnText.textContent = "Obtendo sinal GPS...";
+        gpsMeta.textContent = "";
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            latInput.value = latitude.toFixed(6);
+            lngInput.value = longitude.toFixed(6);
+            gpsMeta.textContent = `Precisão aproximada: ±${Math.round(accuracy)} metros`;
+
+            btnGps.disabled = false;
+            btnGps.classList.remove("loading");
+            gpsBtnText.textContent = "Atualizar coordenadas via GPS";
+          },
+          (error) => {
+            const messages = {
+              1: "Permissão de localização negada no navegador.",
+              2: "Sinal de localização indisponível no momento.",
+              3: "Tempo limite esgotado ao buscar o GPS."
+            };
+            setBanner("error", messages[error.code] || "Erro ao obter localização.");
+
+            btnGps.disabled = false;
+            btnGps.classList.remove("loading");
+            gpsBtnText.textContent = "Capturar coordenadas via GPS";
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      });
+
+      // Submissão assíncrona para o Google Forms
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearBanner();
+
+        const localValue = localInput.value.trim();
+        const latValue = latInput.value.trim().replace(",", ".");
+        const lngValue = lngInput.value.trim().replace(",", ".");
+
+        if (!localValue) {
+          setBanner("error", "Preencha o campo Local.");
+          localInput.focus();
+          return;
+        }
+
+        if (!isValidCoordinate(latValue, -90, 90)) {
+          setBanner("error", "Latitude inválida. Use um valor entre -90 e 90.");
+          latInput.focus();
+          return;
+        }
+
+        if (!isValidCoordinate(lngValue, -180, 180)) {
+          setBanner("error", "Longitude inválida. Use um valor entre -180 e 180.");
+          lngInput.focus();
+          return;
+        }
+
+        // Normaliza vírgula para ponto antes de montar o payload
+        latInput.value = latValue;
+        lngInput.value = lngValue;
+
+        const formData = new URLSearchParams(new FormData(form));
+
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add("loading");
+        submitBtnText.textContent = "Enviando...";
+
+        try {
+          await fetch(GOOGLE_FORM_ACTION_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData.toString()
+          });
+
+          setBanner("success", "Registro enviado com sucesso!");
+          form.reset();
+          gpsMeta.textContent = "";
+        } catch (err) {
+          setBanner("error", "Falha de conexão ao enviar os dados. Verifique sua internet.");
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.classList.remove("loading");
+          submitBtnText.textContent = "Enviar Registro";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
