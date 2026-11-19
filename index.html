@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Estação de Coleta Geográfica & Telemetria</title>
 
+  <!-- Fontes técnicas: Inter (UI) + JetBrains Mono (Coordenadas e métricas) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -12,6 +13,7 @@
     rel="stylesheet"
   />
 
+  <!-- Leaflet CSS (Mapa interativo gratuito, sem API Key) -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -65,6 +67,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Barra superior */
     .topbar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -139,6 +142,7 @@
       background: #16a34a;
     }
 
+    /* Grade principal */
     .workspace {
       max-width: 1360px;
       margin: 0 auto;
@@ -194,6 +198,7 @@
       padding: 1.25rem;
     }
 
+    /* Formulário */
     .field {
       margin-bottom: 1rem;
       position: relative;
@@ -264,6 +269,7 @@
       gap: 0.75rem;
     }
 
+    /* Dropdown da busca de cidade */
     .search-results {
       display: none;
       position: absolute;
@@ -316,6 +322,7 @@
       color: var(--text-muted);
     }
 
+    /* Botões */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -387,6 +394,7 @@
       min-height: 1.1rem;
     }
 
+    /* Banner de status */
     .status-banner {
       display: none;
       margin-top: 0.9rem;
@@ -411,6 +419,7 @@
       color: var(--error-text);
     }
 
+    /* Painel de Telemetria */
     .telemetry-hero {
       display: flex;
       align-items: flex-end;
@@ -475,6 +484,14 @@
       padding: 0.7rem 0.8rem;
     }
 
+    .metric-tile-wide {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
     .metric-label {
       font-size: 0.7rem;
       font-weight: 600;
@@ -492,10 +509,61 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .metric-val-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .metric-sub {
       font-size: 0.72rem;
       color: var(--text-muted);
       margin-top: 0.1rem;
+    }
+
+    .uv-right {
+      text-align: right;
+    }
+
+    .uv-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.14rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+    }
+
+    .uv-badge.uv-low {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #166534;
+    }
+
+    .uv-badge.uv-mod {
+      background: #fefce8;
+      border-color: #fde047;
+      color: #854d0e;
+    }
+
+    .uv-badge.uv-high {
+      background: #fff7ed;
+      border-color: #fdba74;
+      color: #9a3412;
+    }
+
+    .uv-badge.uv-vhigh {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #991b1b;
+    }
+
+    .uv-badge.uv-ext {
+      background: #faf5ff;
+      border-color: #d8b4fe;
+      color: #6b21a8;
     }
 
     .telemetry-badge {
@@ -508,6 +576,7 @@
       border: 1px solid var(--brand-border);
     }
 
+    /* Mapa Interativo */
     .map-panel {
       overflow: hidden;
       display: flex;
@@ -561,7 +630,7 @@
 
     #map {
       width: 100%;
-      height: 500px;
+      height: 540px;
       background: #eae8e3;
       z-index: 1;
     }
@@ -579,6 +648,7 @@
       flex-wrap: wrap;
     }
 
+    /* Marcador customizado carmim */
     .crimson-pin {
       position: relative;
       width: 24px;
@@ -748,6 +818,7 @@
   </header>
 
   <main class="workspace">
+    <!-- Coluna Esquerda: Formulário + Telemetria -->
     <div class="column-stack">
       <section class="panel">
         <div class="panel-header">
@@ -855,6 +926,7 @@
         </div>
       </section>
 
+      <!-- Painel de Telemetria Meteorológica -->
       <section class="panel" aria-live="polite">
         <div class="panel-header">
           <div class="panel-title-group">
@@ -919,11 +991,26 @@
               <div id="valClouds" class="metric-val">-- %</div>
               <div class="metric-sub">Cobertura total</div>
             </div>
+
+            <div class="metric-tile metric-tile-wide">
+              <div>
+                <div class="metric-label">Índice UV (Radiação Solar)</div>
+                <div class="metric-val-row">
+                  <span id="valUv" class="metric-val">--</span>
+                  <span id="valUvBadge" class="uv-badge">Aguardando</span>
+                </div>
+              </div>
+              <div class="uv-right">
+                <div class="metric-label">Máxima Hoje</div>
+                <div id="valUvMax" class="metric-val">--</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
     </div>
 
+    <!-- Coluna Direita: Mapa Interativo + Histórico da Sessão -->
     <div class="column-stack">
       <section class="panel map-panel" aria-label="Mapa interativo">
         <div class="panel-header">
@@ -955,6 +1042,7 @@
         </div>
       </section>
 
+      <!-- Histórico dos registros enviados na sessão -->
       <section class="panel">
         <div class="panel-header">
           <div class="panel-title-group">
@@ -986,6 +1074,7 @@
     </div>
   </main>
 
+  <!-- Leaflet JS -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     crossorigin=""
@@ -998,6 +1087,7 @@
       const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
       const OPEN_METEO_GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
 
+      // Elementos do formulário
       const form = document.getElementById("locationForm");
       const localInput = document.getElementById("local");
       const latInput = document.getElementById("latitude");
@@ -1012,6 +1102,7 @@
       const submitBtnText = document.getElementById("submitBtnText");
       const statusBanner = document.getElementById("statusBanner");
 
+      // Elementos de telemetria
       const telemetryLocationBadge = document.getElementById("telemetryLocationBadge");
       const valTemp = document.getElementById("valTemp");
       const valCondition = document.getElementById("valCondition");
@@ -1024,7 +1115,11 @@
       const valPrecip = document.getElementById("valPrecip");
       const valPressure = document.getElementById("valPressure");
       const valClouds = document.getElementById("valClouds");
+      const valUv = document.getElementById("valUv");
+      const valUvBadge = document.getElementById("valUvBadge");
+      const valUvMax = document.getElementById("valUvMax");
 
+      // Mapa e Histórico
       const mapCoordsReadout = document.getElementById("mapCoordsReadout");
       const layerButtons = document.querySelectorAll(".layer-btn");
       const historyContainer = document.getElementById("historyContainer");
@@ -1036,15 +1131,15 @@
       let accuracyCircle = null;
       let typingTimer = null;
 
+      // Inicialização do Leaflet (OpenStreetMap oficial + Satélite Esri, sem API Key)
       const map = L.map("map", {
         zoomControl: true,
         scrollWheelZoom: true
       }).setView([-14.235, -51.9253], 4);
 
       const tileLayers = {
-        map: L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-          subdomains: "abcd",
+        map: L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           maxZoom: 19
         }),
         satellite: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{r}", {
@@ -1076,6 +1171,7 @@
         popupAnchor: [0, -14]
       });
 
+      // Utilitários
       const escapeHtml = (str) =>
         String(str).replace(/[<>&"]/g, (ch) => ({
           "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;"
@@ -1138,6 +1234,18 @@
         return `${dirs[Math.round(deg / 45) % 8]} (${Math.round(deg)}°)`;
       };
 
+      const classifyUv = (uv) => {
+        if (uv === null || uv === undefined || Number.isNaN(uv)) {
+          return { label: "Indisponível", cls: "" };
+        }
+        if (uv < 3) return { label: "Baixo", cls: "uv-low" };
+        if (uv < 6) return { label: "Moderado", cls: "uv-mod" };
+        if (uv < 8) return { label: "Alto", cls: "uv-high" };
+        if (uv < 11) return { label: "Muito alto", cls: "uv-vhigh" };
+        return { label: "Extremo", cls: "uv-ext" };
+      };
+
+      // Posicionamento do marcador no mapa (arrastável)
       const updateMapPosition = (lat, lng, options = {}) => {
         const { zoom = 12, accuracy = null, popupHtml = null, fly = true } = options;
 
@@ -1164,7 +1272,8 @@
           accuracyCircle = null;
         }
 
-        if (accuracy && accuracy > 0) {
+        // Só exibe o círculo de precisão quando o sinal é preciso (até 300 m)
+        if (accuracy && accuracy > 0 && accuracy <= 300) {
           accuracyCircle = L.circle([lat, lng], {
             radius: accuracy,
             color: "#9f1229",
@@ -1185,6 +1294,7 @@
         mapCoordsReadout.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
       };
 
+      // Consulta completa na Open-Meteo (incluindo UV atual via hourly e UV máximo via daily)
       const fetchWeatherData = async (lat, lng) => {
         const params = new URLSearchParams({
           latitude: String(lat),
@@ -1201,6 +1311,9 @@
             "wind_direction_10m",
             "wind_gusts_10m"
           ].join(","),
+          hourly: "uv_index",
+          daily: "uv_index_max",
+          forecast_days: "1",
           timezone: "auto"
         });
 
@@ -1214,6 +1327,22 @@
       const renderWeatherPanel = (data, label) => {
         const c = data.current || {};
         const u = data.current_units || {};
+
+        // Localiza o índice UV da hora atual no array hourly
+        const currentHourKey = c.time ? `${c.time.slice(0, 13)}:00` : null;
+        const hourlyTimes = data.hourly?.time || [];
+        const hourlyUv = data.hourly?.uv_index || [];
+        const uvIdx = currentHourKey ? hourlyTimes.indexOf(currentHourKey) : -1;
+        const uvNowRaw = uvIdx !== -1 && hourlyUv[uvIdx] !== null && hourlyUv[uvIdx] !== undefined
+          ? Number(hourlyUv[uvIdx])
+          : null;
+        const uvMaxRaw = data.daily?.uv_index_max?.[0] !== undefined && data.daily?.uv_index_max?.[0] !== null
+          ? Number(data.daily.uv_index_max[0])
+          : null;
+
+        const uvInfo = classifyUv(uvNowRaw);
+        const uvText = uvNowRaw !== null ? uvNowRaw.toFixed(1) : "--";
+        const uvMaxText = uvMaxRaw !== null ? uvMaxRaw.toFixed(1) : "--";
 
         const temp = c.temperature_2m !== undefined ? c.temperature_2m.toFixed(1) : "--";
         const feels = c.apparent_temperature !== undefined ? `${c.apparent_temperature.toFixed(1)} ${u.apparent_temperature || "°C"}` : "-- °C";
@@ -1238,6 +1367,10 @@
         valPrecip.textContent = precip;
         valPressure.textContent = pressure;
         valClouds.textContent = clouds;
+        valUv.textContent = uvText;
+        valUvBadge.textContent = uvInfo.label;
+        valUvBadge.className = `uv-badge ${uvInfo.cls}`.trim();
+        valUvMax.textContent = uvMaxText;
 
         return {
           temp,
@@ -1248,6 +1381,9 @@
           precip,
           pressure,
           clouds,
+          uv: uvText,
+          uvLevel: uvInfo.label,
+          uvMax: uvMaxText,
           condition,
           timeStr
         };
@@ -1264,7 +1400,8 @@
             const popupHtml = `
               <strong>${escapeHtml(label)}</strong><br/>
               ${escapeHtml(summary.condition)}<br/>
-              <strong>${summary.temp}°C</strong> · Umidade ${summary.humidity} · Vento ${summary.wind}
+              <strong>${summary.temp}°C</strong> · Umidade ${summary.humidity}<br/>
+              Vento ${summary.wind} · UV ${summary.uv} (${escapeHtml(summary.uvLevel)})
             `;
             marker.bindPopup(popupHtml).openPopup();
           }
@@ -1275,6 +1412,7 @@
         }
       };
 
+      // Clique no mapa seleciona o ponto e consulta o clima automaticamente
       map.on("click", async (e) => {
         clearBanner();
         const { lat, lng } = e.latlng;
@@ -1291,6 +1429,7 @@
         }
       });
 
+      // Digitação manual de coordenadas atualiza o mapa
       const handleCoordinateTyping = () => {
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
@@ -1383,6 +1522,7 @@
         if (!e.target.closest(".field")) closeSearchDropdown();
       });
 
+      // GPS do navegador
       btnGps.addEventListener("click", () => {
         clearBanner();
         if (!("geolocation" in navigator)) {
@@ -1390,210 +1530,4 @@
           return;
         }
 
-        btnGps.disabled = true;
-        btnGps.classList.add("loading");
-        gpsBtnText.textContent = "Localizando...";
-        gpsMeta.textContent = "";
-
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude, accuracy } = position.coords;
-            latInput.value = latitude.toFixed(5);
-            lngInput.value = longitude.toFixed(5);
-            gpsMeta.textContent = `GPS capturado · Precisão aproximada: ±${Math.round(accuracy)} m`;
-
-            updateMapPosition(latitude, longitude, { zoom: 14, accuracy });
-
-            btnGps.disabled = false;
-            btnGps.classList.remove("loading");
-            gpsBtnText.textContent = "Atualizar GPS";
-
-            try {
-              await fetchAndRenderWeather(latitude, longitude, localInput.value.trim() || "Minha localização");
-            } catch {
-              setBanner("error", "GPS capturado, mas não foi possível consultar o clima.");
-            }
-          },
-          (error) => {
-            const messages = {
-              1: "Permissão de localização negada no navegador.",
-              2: "Sinal de localização indisponível no momento.",
-              3: "Tempo limite esgotado ao buscar o GPS."
-            };
-            setBanner("error", messages[error.code] || "Erro ao obter localização.");
-            btnGps.disabled = false;
-            btnGps.classList.remove("loading");
-            gpsBtnText.textContent = "Usar GPS";
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      });
-
-      btnPreviewWeather.addEventListener("click", async () => {
-        clearBanner();
-        const latStr = latInput.value.trim().replace(",", ".");
-        const lngStr = lngInput.value.trim().replace(",", ".");
-
-        if (!isValidCoordinate(latStr, -90, 90) || !isValidCoordinate(lngStr, -180, 180)) {
-          setBanner("error", "Informe latitude (-90 a 90) e longitude (-180 a 180) válidas ou clique no mapa.");
-          return;
-        }
-
-        const lat = Number(latStr);
-        const lng = Number(lngStr);
-        const label = localInput.value.trim() || "Ponto consultado";
-
-        updateMapPosition(lat, lng, { zoom: 12 });
-        try {
-          await fetchAndRenderWeather(lat, lng, label);
-        } catch {
-          setBanner("error", "Falha ao consultar a Open-Meteo. Tente novamente.");
-        }
-      });
-
-      const renderHistory = () => {
-        historyCount.textContent = String(sessionRecords.length);
-        btnExportCsv.disabled = sessionRecords.length === 0;
-
-        if (sessionRecords.length === 0) return;
-
-        const rowsHtml = sessionRecords
-          .map(
-            (rec, idx) => `
-            <tr data-index="${idx}" title="Clique para focar no mapa">
-              <td><strong>${escapeHtml(rec.local)}</strong></td>
-              <td class="mono-cell">${rec.lat}, ${rec.lng}</td>
-              <td class="mono-cell">${rec.temp}°C</td>
-              <td class="mono-cell">${rec.humidity}</td>
-              <td class="mono-cell">${rec.wind}</td>
-              <td>${escapeHtml(rec.condition)}</td>
-            </tr>
-          `
-          )
-          .join("");
-
-        historyContainer.innerHTML = `
-          <div class="history-table-wrap">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Local</th>
-                  <th>Coordenadas</th>
-                  <th>Temp.</th>
-                  <th>Umidade</th>
-                  <th>Vento</th>
-                  <th>Condição</th>
-                </tr>
-              </thead>
-              <tbody>${rowsHtml}</tbody>
-            </table>
-          </div>
-        `;
-
-        historyContainer.querySelectorAll("tbody tr").forEach((tr) => {
-          tr.addEventListener("click", () => {
-            const rec = sessionRecords[Number(tr.dataset.index)];
-            if (!rec) return;
-            updateMapPosition(Number(rec.lat), Number(rec.lng), {
-              zoom: 13,
-              popupHtml: `<strong>${escapeHtml(rec.local)}</strong><br/>${escapeHtml(rec.condition)}<br/><strong>${rec.temp}°C</strong> · Umidade ${rec.humidity}`
-            });
-          });
-        });
-      };
-
-      btnExportCsv.addEventListener("click", () => {
-        if (sessionRecords.length === 0) return;
-        const headers = ["Local", "Latitude", "Longitude", "Temperatura_C", "Umidade", "Vento", "Condicao", "Horario_Registro"];
-        const csvLines = [
-          headers.join(","),
-          ...sessionRecords.map((r) =>
-            [r.local, r.lat, r.lng, r.temp, r.humidity, r.wind, r.condition, r.timestamp]
-              .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-              .join(",")
-          )
-        ];
-
-        const blob = new Blob(["\uFEFF" + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `registros_meteorologicos_${new Date().toISOString().slice(0, 10)}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        clearBanner();
-
-        const localValue = localInput.value.trim();
-        const latValue = latInput.value.trim().replace(",", ".");
-        const lngValue = lngInput.value.trim().replace(",", ".");
-
-        if (!localValue) {
-          setBanner("error", "Preencha o campo Local / Identificação.");
-          localInput.focus();
-          return;
-        }
-
-        if (!isValidCoordinate(latValue, -90, 90)) {
-          setBanner("error", "Latitude inválida. Use um valor entre -90 e 90.");
-          latInput.focus();
-          return;
-        }
-
-        if (!isValidCoordinate(lngValue, -180, 180)) {
-          setBanner("error", "Longitude inválida. Use um valor entre -180 e 180.");
-          lngInput.focus();
-          return;
-        }
-
-        latInput.value = latValue;
-        lngInput.value = lngValue;
-
-        const formData = new URLSearchParams(new FormData(form));
-
-        btnSubmit.disabled = true;
-        btnSubmit.classList.add("loading");
-        submitBtnText.textContent = "Registrando...";
-
-        try {
-
-          await fetch(GOOGLE_FORM_ACTION_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData.toString()
-          });
-
-          const latNum = Number(latValue);
-          const lngNum = Number(lngValue);
-          updateMapPosition(latNum, lngNum, { zoom: 13 });
-          const summary = await fetchAndRenderWeather(latNum, lngNum, localValue);
-
-          sessionRecords.unshift({
-            local: localValue,
-            lat: latNum.toFixed(5),
-            lng: lngNum.toFixed(5),
-            temp: summary.temp,
-            humidity: summary.humidity,
-            wind: summary.wind,
-            condition: summary.condition,
-            timestamp: new Date().toLocaleString("pt-BR")
-          });
-          renderHistory();
-
-          setBanner("success", `Registro "${localValue}" salvo na planilha com sucesso.`);
-        } catch {
-          setBanner("error", "Falha de conexão ao enviar ou consultar os dados. Tente novamente.");
-        } finally {
-          btnSubmit.disabled = false;
-          btnSubmit.classList.remove("loading");
-          submitBtnText.textContent = "Registrar na Planilha";
-        }
-      });
-    })();
-  </script>
-</body>
-</html>
+        btnGps.disabled =
